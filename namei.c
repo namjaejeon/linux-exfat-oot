@@ -15,6 +15,13 @@
 #include "exfat_raw.h"
 #include "exfat_fs.h"
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
+static inline bool d_really_is_positive(const struct dentry *dentry)
+{
+	return dentry->d_inode != NULL;
+}
+#endif
+
 static inline unsigned long exfat_d_version(struct dentry *dentry)
 {
 	return (unsigned long) dentry->d_fsdata;
