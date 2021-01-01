@@ -465,7 +465,7 @@ static ssize_t exfat_direct_IO(int rw, struct kiocb *iocb,
 	struct address_space *mapping = iocb->ki_filp->f_mapping;
 	struct inode *inode = mapping->host;
 	loff_t size = iocb->ki_pos + iov_iter_count(iter);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
 	int rw = iov_iter_rw(iter);
 #endif
 	ssize_t ret;
