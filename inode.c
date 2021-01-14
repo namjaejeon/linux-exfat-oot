@@ -16,6 +16,9 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #include <linux/iversion.h>
 #endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 10, 0)
+#include <linux/aio.h>
+#endif
 #include "exfat_raw.h"
 #include "exfat_fs.h"
 
@@ -451,15 +454,20 @@ static int exfat_write_end(struct file *file, struct address_space *mapping,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 static ssize_t exfat_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
-#else
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
 static ssize_t exfat_direct_IO(struct kiocb *iocb, struct iov_iter *iter,
                              loff_t offset)
+#else
+static ssize_t exfat_direct_IO(int rw, struct kiocb *iocb,
+                             struct iov_iter *iter, loff_t offset)
 #endif
 {
 	struct address_space *mapping = iocb->ki_filp->f_mapping;
 	struct inode *inode = mapping->host;
 	loff_t size = iocb->ki_pos + iov_iter_count(iter);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
 	int rw = iov_iter_rw(iter);
+#endif
 	ssize_t ret;
 
 	if (rw == WRITE) {
@@ -482,8 +490,10 @@ static ssize_t exfat_direct_IO(struct kiocb *iocb, struct iov_iter *iter,
 	 */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 	ret = blockdev_direct_IO(iocb, inode, iter, exfat_get_block);
-#else
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 1, 0)
 	ret = blockdev_direct_IO(iocb, inode, iter, offset, exfat_get_block);
+#else
+	ret = blockdev_direct_IO(rw, iocb, inode, iter, offset, exfat_get_block);
 #endif
 	if (ret < 0 && (rw & WRITE))
 		exfat_write_failed(mapping, size);
