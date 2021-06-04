@@ -64,7 +64,7 @@ static void exfat_get_uniname_from_ext_entry(struct super_block *sb,
 static int exfat_readdir(struct inode *inode, loff_t *cpos, struct exfat_dir_entry *dir_entry)
 {
 	int i, dentries_per_clu, dentries_per_clu_bits = 0, num_ext;
-	unsigned int type, clu_offset;
+	unsigned int type, clu_offset, max_dir_clu;
 	sector_t sector;
 	struct exfat_chain dir, clu;
 	struct exfat_uni_name uni_name;
@@ -89,6 +89,11 @@ static int exfat_readdir(struct inode *inode, loff_t *cpos, struct exfat_dir_ent
 	dentries_per_clu_bits = ilog2(dentries_per_clu);
 
 	clu_offset = dentry >> dentries_per_clu_bits;
+	max_dir_clu = min_t(unsigned int, MAX_EXFAT_DENTRIES >> dentries_per_clu_bits,
+			sbi->num_clusters);
+	if (clu_offset > max_dir_clu)
+		return 0;
+
 	exfat_chain_dup(&clu, &dir);
 
 	if (clu.flags == ALLOC_NO_FAT_CHAIN) {
@@ -246,7 +251,7 @@ static int exfat_iterate(struct file *filp, struct dir_context *ctx)
 	if (err)
 		goto unlock;
 get_new:
-	if (cpos >= i_size_read(inode))
+	if (ei->flags == ALLOC_NO_FAT_CHAIN && cpos >= i_size_read(inode))
 		goto end_of_dir;
 
 	err = exfat_readdir(inode, &cpos, &de);
