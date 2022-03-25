@@ -138,7 +138,11 @@ static int exfat_set_vol_flags(struct super_block *sb, unsigned short new_flags)
 	set_buffer_uptodate(sbi->boot_bh);
 	mark_buffer_dirty(sbi->boot_bh);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 8, 0)
 	__sync_dirty_buffer(sbi->boot_bh, REQ_SYNC | REQ_FUA | REQ_PREFLUSH);
+#else
+	__sync_dirty_buffer(sbi->boot_bh, REQ_SYNC | REQ_FUA | REQ_FLUSH);
+#endif
 
 	return 0;
 }
