@@ -273,7 +273,7 @@ int exfat_find_last_cluster(struct super_block *sb, struct exfat_chain *p_chain,
 	return 0;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 int exfat_zeroed_cluster(struct inode *dir, unsigned int clu)
 {
 	struct super_block *sb = dir->i_sb;
@@ -306,9 +306,12 @@ int exfat_zeroed_cluster(struct inode *dir, unsigned int clu)
 	}
 
 	if (IS_DIRSYNC(dir))
-		return sync_blockdev_range(sb->s_bdev,
+		return filemap_write_and_wait_range(sb->s_bdev->bd_inode->i_mapping,
 				EXFAT_BLK_TO_B(blknr, sb),
 				EXFAT_BLK_TO_B(last_blknr, sb) - 1);
+//		return sync_blockdev_range(sb->s_bdev,
+//				EXFAT_BLK_TO_B(blknr, sb),
+//				EXFAT_BLK_TO_B(last_blknr, sb) - 1);
 
 	return 0;
 }
