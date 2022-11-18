@@ -45,7 +45,7 @@ static void exfat_get_uniname_from_ext_entry(struct super_block *sb,
 	 * Third entry  : first file-name entry
 	 * So, the index of first file-name dentry should start from 2.
 	 */
-	for (i = 2; i < es.num_entries; i++) {
+	for (i = ES_FIRST_FILENAME_ENTRY; i < es.num_entries; i++) {
 		struct exfat_dentry *ep = exfat_get_dentry_cached(&es, i);
 
 		/* end of name entry */
@@ -602,13 +602,13 @@ void exfat_update_dir_chksum_with_entry_set(struct exfat_entry_set_cache *es)
 	unsigned short chksum = 0;
 	struct exfat_dentry *ep;
 
-	for (i = 0; i < es->num_entries; i++) {
+	for (i = ES_FILE_ENTRY; i < es->num_entries; i++) {
 		ep = exfat_get_dentry_cached(es, i);
 		chksum = exfat_calc_chksum16(ep, DENTRY_SIZE, chksum,
 					     chksum_type);
 		chksum_type = CS_DEFAULT;
 	}
-	ep = exfat_get_dentry_cached(es, 0);
+	ep = exfat_get_dentry_cached(es, ES_FILE_ENTRY);
 	ep->dentry.file.checksum = cpu_to_le16(chksum);
 	es->modified = true;
 }
@@ -869,7 +869,7 @@ int exfat_get_dentry_set(struct exfat_entry_set_cache *es,
 		return -EIO;
 	es->bh[es->num_bh++] = bh;
 
-	ep = exfat_get_dentry_cached(es, 0);
+	ep = exfat_get_dentry_cached(es, ES_FILE_ENTRY);
 	if (!exfat_validate_entry(exfat_get_entry_type(ep), &mode))
 		goto put_es;
 
@@ -906,7 +906,7 @@ int exfat_get_dentry_set(struct exfat_entry_set_cache *es,
 	}
 
 	/* validate cached dentries */
-	for (i = 1; i < num_entries; i++) {
+	for (i = ES_STREAM_ENTRY; i < num_entries; i++) {
 		ep = exfat_get_dentry_cached(es, i);
 		if (!exfat_validate_entry(exfat_get_entry_type(ep), &mode))
 			goto put_es;
