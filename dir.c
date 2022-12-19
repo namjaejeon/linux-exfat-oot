@@ -783,9 +783,10 @@ static bool exfat_validate_entry(unsigned int type,
 		if (type == TYPE_STREAM)
 			return false;
 		if (type != TYPE_EXTEND) {
-			if (!(type & TYPE_CRITICAL_SEC))
-				return false;
-			*mode = ES_MODE_GET_CRITICAL_SEC_ENTRY;
+			if (type & TYPE_CRITICAL_SEC)
+				*mode = ES_MODE_GET_CRITICAL_SEC_ENTRY;
+		} else if (!(type & TYPE_CRITICAL_SEC)) {
+			return false;
 		}
 		return true;
 	case ES_MODE_GET_CRITICAL_SEC_ENTRY:
@@ -794,10 +795,9 @@ static bool exfat_validate_entry(unsigned int type,
 		if ((type & TYPE_CRITICAL_SEC) != TYPE_CRITICAL_SEC)
 			return false;
 		return true;
-	default:
-		WARN_ON_ONCE(1);
-		return false;
 	}
+
+	return true;
 }
 
 struct exfat_dentry *exfat_get_dentry_cached(
