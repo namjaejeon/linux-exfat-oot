@@ -379,6 +379,12 @@ unsigned int exfat_get_entry_type(struct exfat_dentry *ep)
 			return TYPE_ACL;
 		return TYPE_CRITICAL_SEC;
 	}
+
+	if (ep->type == EXFAT_VENDOR_EXT)
+		return TYPE_VENDOR_EXT;
+	if (ep->type == EXFAT_VENDOR_ALLOC)
+		return TYPE_VENDOR_ALLOC;
+
 	return TYPE_BENIGN_SEC;
 }
 
@@ -581,11 +587,25 @@ int exfat_remove_entries(struct inode *inode, struct exfat_chain *p_dir,
 	int i;
 	struct exfat_dentry *ep;
 	struct buffer_head *bh;
+	int type;
 
 	for (i = order; i < num_entries; i++) {
 		ep = exfat_get_dentry(sb, p_dir, entry + i, &bh);
 		if (!ep)
 			return -EIO;
+
+		type = exfat_get_entry_type(ep);
+		if (type == TYPE_BENIGN_SEC || type == TYPE_VENDOR_ALLOC) {
+			struct exfat_chain dir;
+
+			exfat_chain_set(&dir,
+					le32_to_cpu(ep->dentry.generic_secondary.start_clu),
+					le64_to_cpu(ep->dentry.generic_secondary.size),
+					ALLOC_FAT_CHAIN);
+
+			if (exfat_free_cluster(inode, &dir))
+				return -EIO;
+		}
 
 		exfat_set_entry_type(ep, TYPE_DELETED);
 		exfat_update_bh(bh, IS_DIRSYNC(inode));
