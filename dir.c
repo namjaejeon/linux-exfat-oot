@@ -783,7 +783,7 @@ static bool exfat_validate_entry(unsigned int type,
 		if (type == TYPE_STREAM)
 			return false;
 		if (type != TYPE_EXTEND) {
-			if (type & TYPE_CRITICAL_SEC)
+			if (type == TYPE_CRITICAL_SEC)
 				*mode = ES_MODE_GET_CRITICAL_SEC_ENTRY;
 		} else if (!(type & TYPE_CRITICAL_SEC)) {
 			return false;
@@ -792,12 +792,14 @@ static bool exfat_validate_entry(unsigned int type,
 	case ES_MODE_GET_CRITICAL_SEC_ENTRY:
 		if (type == TYPE_EXTEND || type == TYPE_STREAM)
 			return false;
-		if ((type & TYPE_CRITICAL_SEC) != TYPE_CRITICAL_SEC)
+		if (type != TYPE_CRITICAL_SEC)
 			return false;
 		return true;
+	default:
+		/* Assume unreconized benign secondary entry */
+		if (type != TYPE_BENIGN_SEC)
+			return false;
 	}
-
-	return true;
 }
 
 struct exfat_dentry *exfat_get_dentry_cached(
@@ -1178,10 +1180,7 @@ int exfat_count_ext_entries(struct super_block *sb, struct exfat_chain *p_dir,
 
 		type = exfat_get_entry_type(ext_ep);
 		brelse(bh);
-		if (type == TYPE_EXTEND || type == TYPE_STREAM)
-			count++;
-		else
-			break;
+		count++;
 	}
 	return count;
 }
