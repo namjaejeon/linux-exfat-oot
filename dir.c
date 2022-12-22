@@ -800,6 +800,8 @@ static bool exfat_validate_entry(unsigned int type,
 		if (type != TYPE_BENIGN_SEC)
 			return false;
 	}
+
+	return true;
 }
 
 struct exfat_dentry *exfat_get_dentry_cached(
