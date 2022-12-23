@@ -597,14 +597,15 @@ int exfat_remove_entries(struct inode *inode, struct exfat_chain *p_dir,
 		type = exfat_get_entry_type(ep);
 		if (type == TYPE_BENIGN_SEC || type == TYPE_VENDOR_ALLOC) {
 			struct exfat_chain dir;
+			unsigned int start_clu =
+				le32_to_cpu(ep->dentry.generic_secondary.start_clu);
+			u64 size = le64_to_cpu(ep->dentry.generic_secondary.size);
 
-			exfat_chain_set(&dir,
-					le32_to_cpu(ep->dentry.generic_secondary.start_clu),
-					le64_to_cpu(ep->dentry.generic_secondary.size),
-					ALLOC_FAT_CHAIN);
+			if (!start_clu || !size)
+				continue;
 
-			if (exfat_free_cluster(inode, &dir))
-				return -EIO;
+			exfat_chain_set(&dir, start_clu, size, ALLOC_FAT_CHAIN);
+			exfat_free_cluster(inode, &dir);
 		}
 
 		exfat_set_entry_type(ep, TYPE_DELETED);
