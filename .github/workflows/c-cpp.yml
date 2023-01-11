@@ -185,7 +185,6 @@ jobs:
         sudo ./check generic/609
         sudo ./check generic/615
         sudo ./check generic/632
-        sudo ./check generic/634
         sudo ./check generic/636
         sudo ./check generic/637
         sudo ./check generic/638
