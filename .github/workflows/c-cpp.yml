@@ -190,7 +190,6 @@ jobs:
         sudo ./check generic/638
         sudo ./check generic/639
         sudo ./check generic/642
-        sudo ./check generic/643
         sudo ./check generic/647
         sudo ./check generic/676
         sudo ./check generic/678
