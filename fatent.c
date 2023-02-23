@@ -357,12 +357,16 @@ int exfat_alloc_cluster(struct inode *inode, unsigned int num_alloc,
 		}
 	}
 
-	/* check cluster validation */
-	if (!is_valid_cluster(sbi, hint_clu)) {
-		exfat_err(sb, "hint_cluster is invalid (%u)",
-			hint_clu);
+	if (hint_clu == sbi->num_clusters) {
 		hint_clu = EXFAT_FIRST_CLUSTER;
 		p_chain->flags = ALLOC_FAT_CHAIN;
+	}
+
+	/* check cluster validation */
+	if (!is_valid_cluster(sbi, hint_clu)) {
+		exfat_err(sb, "hint_cluster is invalid (%u)", hint_clu);
+		ret = -EIO;
+		goto unlock;
 	}
 
 	p_chain->dir = EXFAT_EOF_CLUSTER;
