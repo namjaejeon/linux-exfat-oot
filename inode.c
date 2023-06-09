@@ -279,7 +279,6 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 	sector_t phys = 0;
 	loff_t pos;
 
-	mutex_lock(&sbi->s_lock);
 	last_block = EXFAT_B_TO_BLK_ROUND_UP(i_size_read(inode), sb);
 	if (iblock >= last_block && !create)
 		goto done;
@@ -331,7 +330,6 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 done:
 	bh_result->b_size = EXFAT_BLK_TO_B(max_blocks, sb);
 unlock_ret:
-	mutex_unlock(&sbi->s_lock);
 	return err;
 }
 
