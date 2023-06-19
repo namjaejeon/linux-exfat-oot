@@ -221,6 +221,7 @@ struct exfat_dir_entry {
 	unsigned char flags;
 	unsigned short attr;
 	loff_t size;
+	loff_t valid_size;
 	unsigned int num_subdirs;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
 	struct timespec64 atime;
@@ -336,6 +337,7 @@ struct exfat_inode_info {
 	loff_t i_size_aligned;
 	/* on-disk position of directory entry or 0 */
 	loff_t i_pos;
+	loff_t valid_size;
 	/* hash by i_location */
 	struct hlist_node i_hash_fat;
 	/* protect bmap against truncate */
