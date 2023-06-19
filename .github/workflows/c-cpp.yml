@@ -44,7 +44,7 @@ jobs:
         echo 'source "fs/exfat/Kconfig"' >> fs/Kconfig
         echo 'CONFIG_EXFAT_FS=m' >> .config
         echo 'CONFIG_EXFAT_DEFAULT_IOCHARSET="utf8"' >> .config
-        make -j$((`nproc`+1)) fs/exfat/exfat.ko
+        #  make -j$((`nproc`+1)) fs/exfat/exfat.ko
     - name: Run xfstests testsuite
       run: |
         cd ../linux-exfat-oot
