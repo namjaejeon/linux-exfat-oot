@@ -78,6 +78,7 @@ jobs:
         cd ..
         sudo umount ./full_test/
         sudo fsck.exfat /dev/loop22
+        rm full_test.img
     - name: xfstest tests
       run: |
         truncate -s 100G test.img
