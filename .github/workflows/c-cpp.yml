@@ -125,7 +125,11 @@ jobs:
         sudo ./check generic/130
         sudo ./check generic/131
         sudo ./check generic/132
+        sudo mkfs.exfat /dev/loop20
+        sudo mkfs.exfat /dev/loop21
         sudo ./check generic/133
+        sudo mkfs.exfat /dev/loop20
+        sudo mkfs.exfat /dev/loop21
         sudo ./check generic/135
         sudo ./check generic/141
         sudo ./check generic/169
