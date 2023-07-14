@@ -78,6 +78,7 @@ jobs:
         cd ..
         sudo umount ./full_test/
         sudo fsck.exfat /dev/loop22
+        sudo losetup -d /dev/loop22
         rm full_test.img
     - name: xfstest tests
       run: |
@@ -136,6 +137,19 @@ jobs:
         sudo ./check generic/211
         sudo ./check generic/212
         sudo ./check generic/215
+
+        sudo losetup -d /dev/loop20
+        sudo losetup -d  /dev/loop21
+        rm test.img
+        rm scratch.img
+
+        truncate -s 100G test.img
+        truncate -s 100G scratch.img
+        sudo losetup /dev/loop20 test.img
+        sudo losetup /dev/loop21 scratch.img
+        sudo mkfs.exfat /dev/loop20
+        sudo mkfs.exfat /dev/loop21
+
         sudo ./check generic/239
         sudo ./check generic/240
         sudo ./check generic/241
