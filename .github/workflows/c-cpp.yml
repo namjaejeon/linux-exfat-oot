@@ -60,6 +60,26 @@ jobs:
         sudo mkdir -p /mnt/scratch
         sudo mkdir -p /mnt/test
         sudo mkdir -p full_test
+    - name: create file/director test
+      run: |
+        truncate -s 10G full_test.img
+        sudo losetup /dev/loop22 full_test.img
+        sudo mkfs.exfat /dev/loop22
+        sudo mount -t exfat /dev/loop22 ./full_test/
+        cd full_test/
+        i=1;while [ $i -le 10000 ];do sudo touch file$i;if [ $? != 0 ]; then exit 1; fi; i=$(($i + 1));done
+        sync
+        sudo fsck.exfat /dev/loop22
+        sudo rm -rf *
+        i=1;while [ $i -le 10000 ];do sudo mkdir file$i;if [ $? != 0 ]; then exit 1; fi; i=$(($i + 1));done
+        sync
+        sudo rm -rf *
+        sudo fsck.exfat /dev/loop22
+        cd ..
+        sudo umount ./full_test/
+        sudo fsck.exfat /dev/loop22
+        sudo losetup -d /dev/loop22
+        rm full_test.img
     - name: xfstest tests
       run: |
         cd exfat-testsuites/
