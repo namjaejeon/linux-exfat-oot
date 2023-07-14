@@ -128,6 +128,7 @@ jobs:
         sudo losetup /dev/loop21 scratch.img
         sudo mkfs.exfat /dev/loop20
         sudo mkfs.exfat /dev/loop21
+        sudo ./check generic/221
         sudo ./check generic/239
         sudo ./check generic/240
         sudo ./check generic/241
