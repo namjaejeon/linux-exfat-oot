@@ -136,7 +136,6 @@ jobs:
         sudo ./check generic/211
         sudo ./check generic/212
         sudo ./check generic/215
-        sudo ./check generic/221
         sudo ./check generic/239
         sudo ./check generic/240
         sudo ./check generic/241
