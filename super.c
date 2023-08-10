@@ -53,9 +53,7 @@ static void exfat_put_super(struct super_block *sb)
 	mutex_unlock(&sbi->s_lock);
 
 	unload_nls(sbi->nls_io);
-	exfat_free_iocharset(sbi);
 	exfat_free_upcase_table(sbi);
-	kfree(sbi);
 }
 
 static int exfat_sync_fs(struct super_block *sb, int wait)
@@ -1022,9 +1020,6 @@ free_table:
 
 check_nls_io:
 	unload_nls(sbi->nls_io);
-	exfat_free_iocharset(sbi);
-	sb->s_fs_info = NULL;
-	kfree(sbi);
 	return err;
 }
 
@@ -1034,14 +1029,18 @@ static int exfat_get_tree(struct fs_context *fc)
 	return get_tree_bdev(fc, exfat_fill_super);
 }
 
+static void exfat_free_sbi(struct exfat_sb_info *sbi)
+{
+	exfat_free_iocharset(sbi);
+	kfree(sbi);
+}
+
 static void exfat_free(struct fs_context *fc)
 {
 	struct exfat_sb_info *sbi = fc->s_fs_info;
 
-	if (sbi) {
-		exfat_free_iocharset(sbi);
-		kfree(sbi);
-	}
+	if (sbi)
+		exfat_free_sbi(sbi);
 }
 
 static int exfat_reconfigure(struct fs_context *fc)
@@ -1093,6 +1092,15 @@ static struct dentry *exfat_fs_mount(struct file_system_type *fs_type,
 }
 #endif
 
+static void exfat_kill_sb(struct super_block *sb)
+{
+	struct exfat_sb_info *sbi = sb->s_fs_info;
+
+	kill_block_super(sb);
+	if (sbi)
+		exfat_free_sbi(sbi);
+}
+
 static struct file_system_type exfat_fs_type = {
 	.owner			= THIS_MODULE,
 	.name			= "exfat",
@@ -1102,7 +1110,7 @@ static struct file_system_type exfat_fs_type = {
 #else
 	.mount			= exfat_fs_mount,
 #endif
-	.kill_sb		= kill_block_super,
+	.kill_sb		= exfat_kill_sb,
 	.fs_flags		= FS_REQUIRES_DEV,
 };
 
