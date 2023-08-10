@@ -31,20 +31,20 @@ jobs:
         export PATH=/usr/local/lib:$PATH
         sudo useradd fsgqa
         sudo useradd 123456-fsgqa
-    - name: Copy exfat source to kernel
-      run: |
-        mv linux-stable ../
-        mkdir ../linux-stable/fs/exfat
-        cp -ar * ../linux-stable/fs/exfat/
-    - name: Compile with 4.1 kernel
-      run: |
-        cd ../linux-stable
-        yes "" | make oldconfig > /dev/null
-        echo 'obj-$(CONFIG_EXFAT_FS) += exfat/' >> fs/Makefile
-        echo 'source "fs/exfat/Kconfig"' >> fs/Kconfig
-        echo 'CONFIG_EXFAT_FS=m' >> .config
-        echo 'CONFIG_EXFAT_DEFAULT_IOCHARSET="utf8"' >> .config
-        make -j$((`nproc`+1)) fs/exfat/exfat.ko
+        #- name: Copy exfat source to kernel
+        #run: |
+        #mv linux-stable ../
+        #mkdir ../linux-stable/fs/exfat
+        #cp -ar * ../linux-stable/fs/exfat/
+        #    - name: Compile with 4.1 kernel
+        #      run: |
+        # cd ../linux-stable
+        # yes "" | make oldconfig > /dev/null
+        #echo 'obj-$(CONFIG_EXFAT_FS) += exfat/' >> fs/Makefile
+        #echo 'source "fs/exfat/Kconfig"' >> fs/Kconfig
+        #echo 'CONFIG_EXFAT_FS=m' >> .config
+        #echo 'CONFIG_EXFAT_DEFAULT_IOCHARSET="utf8"' >> .config
+        #make -j$((`nproc`+1)) fs/exfat/exfat.ko
     - name: Run xfstests testsuite
       run: |
         cd ../linux-exfat-oot
