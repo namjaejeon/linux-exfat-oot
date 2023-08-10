@@ -43,6 +43,16 @@ static void exfat_free_iocharset(struct exfat_sb_info *sbi)
 		kfree(sbi->options.iocharset);
 }
 
+static void exfat_delayed_free(struct rcu_head *p)
+{
+	struct exfat_sb_info *sbi = container_of(p, struct exfat_sb_info, rcu);
+
+	unload_nls(sbi->nls_io);
+	exfat_free_iocharset(sbi);
+	exfat_free_upcase_table(sbi);
+	kfree(sbi);
+}
+
 static void exfat_put_super(struct super_block *sb)
 {
 	struct exfat_sb_info *sbi = EXFAT_SB(sb);
@@ -52,10 +62,7 @@ static void exfat_put_super(struct super_block *sb)
 	brelse(sbi->boot_bh);
 	mutex_unlock(&sbi->s_lock);
 
-	unload_nls(sbi->nls_io);
-	exfat_free_iocharset(sbi);
-	exfat_free_upcase_table(sbi);
-	kfree(sbi);
+	call_rcu(&sbi->rcu, exfat_delayed_free);
 }
 
 static int exfat_sync_fs(struct super_block *sb, int wait)
