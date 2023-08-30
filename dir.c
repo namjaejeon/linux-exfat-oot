@@ -307,10 +307,17 @@ out:
 	return err;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
+WRAP_DIR_ITER(exfat_iterate) // FIXME!
+#endif
 const struct file_operations exfat_dir_operations = {
 	.llseek		= generic_file_llseek,
 	.read		= generic_read_dir,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 5, 0)
+	.iterate_shared	= shared_exfat_iterate,
+#else
 	.iterate	= exfat_iterate,
+#endif
 	.unlocked_ioctl = exfat_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = exfat_compat_ioctl,
