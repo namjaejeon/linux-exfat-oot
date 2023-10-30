@@ -640,7 +640,7 @@ static int exfat_read_root(struct inode *inode)
 	inode->i_version++;
 #endif
 	inode->i_generation = 0;
-	inode->i_mode = exfat_make_mode(sbi, ATTR_SUBDIR, 0777);
+	inode->i_mode = exfat_make_mode(sbi, EXFAT_ATTR_SUBDIR, 0777);
 	inode->i_op = &exfat_dir_inode_operations;
 	inode->i_fop = &exfat_dir_operations;
 
@@ -649,7 +649,7 @@ static int exfat_read_root(struct inode *inode)
 	ei->i_size_aligned = i_size_read(inode);
 	ei->i_size_ondisk = i_size_read(inode);
 
-	exfat_save_attr(inode, ATTR_SUBDIR);
+	exfat_save_attr(inode, EXFAT_ATTR_SUBDIR);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 	inode->i_mtime = inode->i_atime = inode->i_ctime = ei->i_crtime =
 		current_time(inode);

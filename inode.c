@@ -436,13 +436,13 @@ static int exfat_write_end(struct file *file, struct address_space *mapping,
 	if (err < len)
 		exfat_write_failed(mapping, pos+len);
 
-	if (!(err < 0) && !(ei->attr & ATTR_ARCHIVE)) {
+	if (!(err < 0) && !(ei->attr & EXFAT_ATTR_ARCHIVE)) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 		inode->i_mtime = inode->i_ctime = current_time(inode);
 #else
 		inode->i_mtime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
-		ei->attr |= ATTR_ARCHIVE;
+		ei->attr |= EXFAT_ATTR_ARCHIVE;
 		mark_inode_dirty(inode);
 	}
 
@@ -629,7 +629,7 @@ static int exfat_fill_inode(struct inode *inode, struct exfat_dir_entry *info)
 	inode->i_generation = prandom_u32();
 #endif
 
-	if (info->attr & ATTR_SUBDIR) { /* directory */
+	if (info->attr & EXFAT_ATTR_SUBDIR) { /* directory */
 		inode->i_generation &= ~1;
 		inode->i_mode = exfat_make_mode(sbi, info->attr, 0777);
 		inode->i_op = &exfat_dir_inode_operations;

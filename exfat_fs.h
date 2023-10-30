@@ -162,12 +162,6 @@ enum {
 #define DIR_CACHE_SIZE		\
 	(DIV_ROUND_UP(EXFAT_DEN_TO_B(ES_MAX_ENTRY_NUM), SECTOR_SIZE) + 1)
 
-/*
- * attribute ioctls, same as their FAT equivalents.
- */
-#define EXFAT_IOCTL_GET_ATTRIBUTES	_IOR('r', 0x10, __u32)
-#define EXFAT_IOCTL_SET_ATTRIBUTES	_IOW('r', 0x11, __u32)
-
 struct exfat_dentry_namebuf {
 	char *lfn;
 	int lfnbuf_len; /* usually MAX_UNINAME_BUF_SIZE */
@@ -390,10 +384,10 @@ static inline int exfat_mode_can_hold_ro(struct inode *inode)
 static inline mode_t exfat_make_mode(struct exfat_sb_info *sbi,
 		unsigned short attr, mode_t mode)
 {
-	if ((attr & ATTR_READONLY) && !(attr & ATTR_SUBDIR))
+	if ((attr & EXFAT_ATTR_READONLY) && !(attr & EXFAT_ATTR_SUBDIR))
 		mode &= ~0222;
 
-	if (attr & ATTR_SUBDIR)
+	if (attr & EXFAT_ATTR_SUBDIR)
 		return (mode & ~sbi->options.fs_dmask) | S_IFDIR;
 
 	return (mode & ~sbi->options.fs_fmask) | S_IFREG;
@@ -405,18 +399,18 @@ static inline unsigned short exfat_make_attr(struct inode *inode)
 	unsigned short attr = EXFAT_I(inode)->attr;
 
 	if (S_ISDIR(inode->i_mode))
-		attr |= ATTR_SUBDIR;
+		attr |= EXFAT_ATTR_SUBDIR;
 	if (exfat_mode_can_hold_ro(inode) && !(inode->i_mode & 0222))
-		attr |= ATTR_READONLY;
+		attr |= EXFAT_ATTR_READONLY;
 	return attr;
 }
 
 static inline void exfat_save_attr(struct inode *inode, unsigned short attr)
 {
 	if (exfat_mode_can_hold_ro(inode))
-		EXFAT_I(inode)->attr = attr & (ATTR_RWMASK | ATTR_READONLY);
+		EXFAT_I(inode)->attr = attr & (EXFAT_ATTR_RWMASK | EXFAT_ATTR_READONLY);
 	else
-		EXFAT_I(inode)->attr = attr & ATTR_RWMASK;
+		EXFAT_I(inode)->attr = attr & EXFAT_ATTR_RWMASK;
 }
 
 static inline bool exfat_is_last_sector_in_cluster(struct exfat_sb_info *sbi,

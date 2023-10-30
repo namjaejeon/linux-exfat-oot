@@ -14,6 +14,7 @@
 #include <linux/blkdev.h>
 #include <linux/fsnotify.h>
 #include <linux/security.h>
+#include <linux/msdos_fs.h>
 
 #include "exfat_raw.h"
 #include "exfat_fs.h"
@@ -154,7 +155,7 @@ int __exfat_truncate(struct inode *inode)
 	}
 
 	if (ei->type == TYPE_FILE)
-		ei->attr |= ATTR_ARCHIVE;
+		ei->attr |= EXFAT_ATTR_ARCHIVE;
 
 	/*
 	 * update the directory entry
@@ -443,8 +444,9 @@ static int exfat_ioctl_set_attributes(struct file *file, u32 __user *user_attr)
 	/*
 	 * Mask attributes so we don't set reserved fields.
 	 */
-	attr &= (ATTR_READONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_ARCHIVE);
-	attr |= (is_dir ? ATTR_SUBDIR : 0);
+	attr &= (EXFAT_ATTR_READONLY | EXFAT_ATTR_HIDDEN | EXFAT_ATTR_SYSTEM |
+		 EXFAT_ATTR_ARCHIVE);
+	attr |= (is_dir ? EXFAT_ATTR_SUBDIR : 0);
 
 	/* Equivalent to a chmod() */
 	ia.ia_valid = ATTR_MODE | ATTR_CTIME;
@@ -459,12 +461,12 @@ static int exfat_ioctl_set_attributes(struct file *file, u32 __user *user_attr)
 		ia.ia_mode = exfat_make_mode(sbi, attr, 0666 | (inode->i_mode & 0111));
 
 	/* The root directory has no attributes */
-	if (inode->i_ino == EXFAT_ROOT_INO && attr != ATTR_SUBDIR) {
+	if (inode->i_ino == EXFAT_ROOT_INO && attr != EXFAT_ATTR_SUBDIR) {
 		err = -EINVAL;
 		goto out_unlock_inode;
 	}
 
-	if (((attr | oldattr) & ATTR_SYSTEM) &&
+	if (((attr | oldattr) & EXFAT_ATTR_SYSTEM) &&
 	    !capable(CAP_LINUX_IMMUTABLE)) {
 		err = -EPERM;
 		goto out_unlock_inode;
@@ -562,9 +564,9 @@ long exfat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	u32 __user *user_attr = (u32 __user *)arg;
 
 	switch (cmd) {
-	case EXFAT_IOCTL_GET_ATTRIBUTES:
+	case FAT_IOCTL_GET_ATTRIBUTES:
 		return exfat_ioctl_get_attributes(inode, user_attr);
-	case EXFAT_IOCTL_SET_ATTRIBUTES:
+	case FAT_IOCTL_SET_ATTRIBUTES:
 		return exfat_ioctl_set_attributes(filp, user_attr);
 	case FITRIM:
 		return exfat_ioctl_fitrim(inode, arg);
