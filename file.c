@@ -385,6 +385,7 @@ int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+	setattr_copy(&nop_mnt_idmap, inode, attr);
 	exfat_truncate_inode_atime(inode);
 #else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
