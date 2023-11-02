@@ -625,7 +625,11 @@ static int exfat_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 	dir->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	dir->i_mtime = inode_set_ctime_current(dir);
+#else
 	dir->i_ctime = dir->i_mtime = current_time(dir);
+#endif
 #else
 	dir->i_ctime = dir->i_mtime = CURRENT_TIME_SEC;
 #endif
@@ -647,8 +651,12 @@ static int exfat_create(struct inode *dir, struct dentry *dentry, umode_t mode,
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	inode->i_mtime = inode->i_atime = EXFAT_I(inode)->i_crtime = inode_set_ctime_current(inode);
+#else
 	inode->i_mtime = inode->i_atime = inode->i_ctime =
 		EXFAT_I(inode)->i_crtime = current_time(inode);
+#endif
 #else
 	inode->i_mtime = inode->i_atime = inode->i_ctime =
 		EXFAT_I(inode)->i_crtime = CURRENT_TIME_SEC;
@@ -903,7 +911,11 @@ static int exfat_unlink(struct inode *dir, struct dentry *dentry)
 	dir->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	dir->i_mtime = dir->i_atime = inode_set_ctime_current(dir);
+#else
 	dir->i_mtime = dir->i_atime = dir->i_ctime = current_time(dir);
+#endif
 #else
 	dir->i_mtime = dir->i_atime = dir->i_ctime = CURRENT_TIME_SEC;
 #endif
@@ -915,7 +927,11 @@ static int exfat_unlink(struct inode *dir, struct dentry *dentry)
 
 	clear_nlink(inode);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	inode->i_mtime = inode->i_atime = inode_set_ctime_current(inode);
+#else
 	inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+#endif
 #else
 	inode->i_mtime = inode->i_atime = dir->i_ctime = CURRENT_TIME_SEC;
 #endif
@@ -964,7 +980,11 @@ static int exfat_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	dir->i_mtime = inode_set_ctime_current(dir);
+#else
 	dir->i_ctime = dir->i_mtime = current_time(dir);
+#endif
 #else
 	dir->i_ctime = dir->i_mtime = CURRENT_TIME_SEC;
 #endif
@@ -986,8 +1006,12 @@ static int exfat_mkdir(struct inode *dir, struct dentry *dentry, umode_t mode)
 	inode->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	inode->i_mtime = inode->i_atime = EXFAT_I(inode)->i_crtime = inode_set_ctime_current(inode);
+#else
 	inode->i_mtime = inode->i_atime = inode->i_ctime =
 		EXFAT_I(inode)->i_crtime = current_time(inode);
+#endif
 #else
 	inode->i_mtime = inode->i_atime = inode->i_ctime =
 		EXFAT_I(inode)->i_crtime = CURRENT_TIME_SEC;
@@ -1111,7 +1135,11 @@ static int exfat_rmdir(struct inode *dir, struct dentry *dentry)
 	dir->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	dir->i_mtime = dir->i_atime = inode_set_ctime_current(dir);
+#else
 	dir->i_mtime = dir->i_atime = dir->i_ctime = current_time(dir);
+#endif
 #else
 	dir->i_mtime = dir->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
@@ -1124,7 +1152,11 @@ static int exfat_rmdir(struct inode *dir, struct dentry *dentry)
 
 	clear_nlink(inode);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	inode->i_mtime = inode->i_atime = inode_set_ctime_current(inode);
+#else
 	inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
+#endif
 #else
 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
@@ -1543,8 +1575,12 @@ static int exfat_rename(struct inode *old_dir, struct dentry *old_dentry,
 			WARN_ON(new_inode->i_nlink == 0);
 		}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+		EXFAT_I(new_inode)->i_crtime = current_time(new_inode);
+#else
 		new_inode->i_ctime = EXFAT_I(new_inode)->i_crtime =
 			current_time(new_inode);
+#endif
 #else
 		new_inode->i_ctime = EXFAT_I(new_inode)->i_crtime =
 			CURRENT_TIME_SEC;

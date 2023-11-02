@@ -651,8 +651,12 @@ static int exfat_read_root(struct inode *inode)
 
 	exfat_save_attr(inode, EXFAT_ATTR_SUBDIR);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	inode->i_mtime = inode->i_atime = ei->i_crtime = inode_set_ctime_current(inode);
+#else
 	inode->i_mtime = inode->i_atime = inode->i_ctime = ei->i_crtime =
 		current_time(inode);
+#endif
 #else
 	inode->i_mtime = inode->i_atime = inode->i_ctime = ei->i_crtime =
 		CURRENT_TIME_SEC;
