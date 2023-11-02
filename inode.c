@@ -61,18 +61,18 @@ int __exfat_write_inode(struct inode *inode, int sync)
 			&ep->dentry.file.create_date,
 			&ep->dentry.file.create_time_cs);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+	ts = inode_get_mtime(inode);
 	exfat_set_entry_time(sbi, &ts,
 			     &ep->dentry.file.modify_tz,
 			     &ep->dentry.file.modify_time,
 			     &ep->dentry.file.modify_date,
 			     &ep->dentry.file.modify_time_cs);
-	inode_set_mtime_to_ts(inode, ts);
+	ts = inode_get_atime(inode);
 	exfat_set_entry_time(sbi, &ts,
 			     &ep->dentry.file.access_tz,
 			     &ep->dentry.file.access_time,
 			     &ep->dentry.file.access_date,
 			     NULL);
-	inode_set_atime_to_ts(inode, ts);
 #else
 	exfat_set_entry_time(sbi, &inode->i_mtime,
 			&ep->dentry.file.modify_tz,
