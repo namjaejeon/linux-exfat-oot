@@ -1481,8 +1481,13 @@ static int exfat_rename(struct inode *old_dir, struct dentry *old_dentry,
 	new_dir->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	simple_rename_timestamp(old_dir, old_dentry, new_dir, new_dentry);
+	EXFAT_I(new_dir)->i_crtime = current_time(new_dir);
+#else
 	new_dir->i_ctime = new_dir->i_mtime = new_dir->i_atime =
 		EXFAT_I(new_dir)->i_crtime = current_time(new_dir);
+#endif
 #else
 	new_dir->i_ctime = new_dir->i_mtime = new_dir->i_atime =
 		EXFAT_I(new_dir)->i_crtime = CURRENT_TIME_SEC;
@@ -1513,7 +1518,7 @@ static int exfat_rename(struct inode *old_dir, struct dentry *old_dentry,
 #else
 	old_dir->i_version++;
 #endif
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0) && LINUX_VERSION_CODE <= KERNEL_VERSION(6, 6, 0)
 	old_dir->i_ctime = old_dir->i_mtime = current_time(old_dir);
 #else
 	old_dir->i_ctime = old_dir->i_mtime = CURRENT_TIME_SEC;
