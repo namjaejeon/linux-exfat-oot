@@ -903,9 +903,9 @@ static int exfat_unlink(struct inode *dir, struct dentry *dentry)
 	dir->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-	dir->i_mtime = dir->i_atime = current_time(dir);
+	dir->i_mtime = dir->i_atime = dir->i_ctime = current_time(dir);
 #else
-	dir->i_mtime = dir->i_atime = CURRENT_TIME_SEC;
+	dir->i_mtime = dir->i_atime = dir->i_ctime = CURRENT_TIME_SEC;
 #endif
 	exfat_truncate_atime(&dir->i_atime);
 	if (IS_DIRSYNC(dir))
@@ -915,9 +915,9 @@ static int exfat_unlink(struct inode *dir, struct dentry *dentry)
 
 	clear_nlink(inode);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-	inode->i_mtime = inode->i_atime = current_time(inode);
+	inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
 #else
-	inode->i_mtime = inode->i_atime = CURRENT_TIME_SEC;
+	inode->i_mtime = inode->i_atime = dir->i_ctime = CURRENT_TIME_SEC;
 #endif
 	exfat_truncate_atime(&inode->i_atime);
 	exfat_unhash_inode(inode);
@@ -1111,9 +1111,9 @@ static int exfat_rmdir(struct inode *dir, struct dentry *dentry)
 	dir->i_version++;
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-	dir->i_mtime = dir->i_atime = current_time(dir);
+	dir->i_mtime = dir->i_atime = dir->i_ctime = current_time(dir);
 #else
-	dir->i_mtime = dir->i_atime = CURRENT_TIME_SEC;
+	dir->i_mtime = dir->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
 	exfat_truncate_atime(&dir->i_atime);
 	if (IS_DIRSYNC(dir))
@@ -1124,9 +1124,9 @@ static int exfat_rmdir(struct inode *dir, struct dentry *dentry)
 
 	clear_nlink(inode);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
-	inode->i_mtime = inode->i_atime = current_time(inode);
+	inode->i_mtime = inode->i_atime = inode->i_ctime = current_time(inode);
 #else
-	inode->i_mtime = inode->i_atime = CURRENT_TIME_SEC;
+	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
 	exfat_truncate_atime(&inode->i_atime);
 	exfat_unhash_inode(inode);
