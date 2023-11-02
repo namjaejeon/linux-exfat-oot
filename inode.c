@@ -380,7 +380,11 @@ static void exfat_write_failed(struct address_space *mapping, loff_t to)
 	if (to > i_size_read(inode)) {
 		truncate_pagecache(inode, i_size_read(inode));
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+		inode->i_mtime = inode_set_ctime_current(inode);
+#else
 		inode->i_mtime = inode->i_ctime = current_time(inode);
+#endif
 #else
 		inode->i_mtime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
@@ -438,7 +442,11 @@ static int exfat_write_end(struct file *file, struct address_space *mapping,
 
 	if (!(err < 0) && !(ei->attr & EXFAT_ATTR_ARCHIVE)) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+		inode->i_mtime = inode_set_ctime_current(inode);
+#else
 		inode->i_mtime = inode->i_ctime = current_time(inode);
+#endif
 #else
 		inode->i_mtime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
@@ -659,7 +667,11 @@ static int exfat_fill_inode(struct inode *inode, struct exfat_dir_entry *info)
 
 	inode->i_blocks = round_up(i_size_read(inode), sbi->cluster_size) >> 9;
 	inode->i_mtime = info->mtime;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	inode_set_ctime_to_ts(inode, info->mtime);
+#else
 	inode->i_ctime = info->mtime;
+#endif
 	ei->i_crtime = info->crtime;
 	inode->i_atime = info->atime;
 
