@@ -269,7 +269,11 @@ int exfat_getattr(struct vfsmount *mnt, struct dentry *dentry,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+	generic_fillattr(&nop_mnt_idmap, request_mask, inode, stat);
+#else
 	generic_fillattr(&nop_mnt_idmap, inode, stat);
+#endif
 #else
 	generic_fillattr(&init_user_ns, inode, stat);
 #endif
