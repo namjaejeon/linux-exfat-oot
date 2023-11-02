@@ -598,6 +598,9 @@ void __exfat_fs_error(struct super_block *sb, int report, const char *fmt, ...)
 void exfat_get_entry_time(struct exfat_sb_info *sbi, struct timespec64 *ts,
 		u8 tz, __le16 time, __le16 date, u8 time_cs);
 void exfat_truncate_atime(struct timespec64 *ts);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+void exfat_truncate_inode_atime(struct inode *inode);
+#endif
 void exfat_set_entry_time(struct exfat_sb_info *sbi, struct timespec64 *ts,
 		u8 *tz, __le16 *time, __le16 *date, u8 *time_cs);
 #else
