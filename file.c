@@ -31,7 +31,11 @@ static int exfat_cont_expand(struct inode *inode, loff_t size)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+	inode_set_mtime_to_ts(inode, inode_set_ctime_current(inode));
+#else
 	inode->i_mtime = inode_set_ctime_current(inode);
+#endif
 #else
 	inode->i_ctime = inode->i_mtime = current_time(inode);
 #endif
@@ -368,7 +372,11 @@ int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 	if (attr->ia_valid & ATTR_SIZE)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+		inode_set_mtime_to_ts(inode, inode_set_ctime_current(inode));
+#else
 		inode->i_mtime = inode_set_ctime_current(inode);
+#endif
 #else
 		inode->i_mtime = inode->i_ctime = current_time(inode);
 #endif
@@ -376,6 +384,9 @@ int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 		inode->i_mtime = inode->i_ctime = CURRENT_TIME_SEC;
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+	exfat_truncate_inode_atime(inode);
+#else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 	setattr_copy(&nop_mnt_idmap, inode, attr);
@@ -386,6 +397,7 @@ int exfat_setattr(struct dentry *dentry, struct iattr *attr)
 	setattr_copy(inode, attr);
 #endif
 	exfat_truncate_atime(&inode->i_atime);
+#endif
 
 	if (attr->ia_valid & ATTR_SIZE) {
 		error = exfat_block_truncate_page(inode, attr->ia_size);

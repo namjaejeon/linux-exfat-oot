@@ -650,6 +650,10 @@ static int exfat_read_root(struct inode *inode)
 	ei->i_size_ondisk = i_size_read(inode);
 
 	exfat_save_attr(inode, EXFAT_ATTR_SUBDIR);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
+	ei->i_crtime = simple_inode_init_ts(inode);
+	exfat_truncate_inode_atime(inode);
+#else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
 	inode->i_mtime = inode->i_atime = ei->i_crtime = inode_set_ctime_current(inode);
@@ -662,6 +666,7 @@ static int exfat_read_root(struct inode *inode)
 		CURRENT_TIME_SEC;
 #endif
 	exfat_truncate_atime(&inode->i_atime);
+#endif
 	return 0;
 }
 
