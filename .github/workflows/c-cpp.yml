@@ -17,10 +17,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install libelf-dev wget tar gzip python2.7
-        wget https://mirrors.edge.kernel.org/pub/linux/kernel/v4.x/linux-4.1.36.tar.gz
-        tar xf linux-4.1.36.tar.gz
-        mv linux-4.1.36 linux-stable
-        rm -rf linux-4.1.36.tar.gz
+        wget https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.15.140.tar.gz
+        tar xf linux-5.15.140.tar.gz
+        mv linux-5.15.140 linux-stable
+        rm -rf linux-5.15.140.tar.gz
     - name: Prerequisite for xfstests testing
       run: |
         sudo apt-get install linux-headers-$(uname -r)
@@ -35,14 +35,11 @@ jobs:
     - name: Copy exfat source to kernel
       run: |
         mv linux-stable ../
-        mkdir ../linux-stable/fs/exfat
         cp -ar * ../linux-stable/fs/exfat/
-    - name: Compile with 4.1 kernel
+    - name: Compile with 5.15 kernel
       run: |
         cd ../linux-stable
         yes "" | make oldconfig > /dev/null
-        echo 'obj-$(CONFIG_EXFAT_FS) += exfat/' >> fs/Makefile
-        echo 'source "fs/exfat/Kconfig"' >> fs/Kconfig
         echo 'CONFIG_EXFAT_FS=m' >> .config
         echo 'CONFIG_EXFAT_DEFAULT_IOCHARSET="utf8"' >> .config
         make -j$((`nproc`+1)) fs/exfat/exfat.ko

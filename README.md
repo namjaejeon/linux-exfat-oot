@@ -1,5 +1,5 @@
 ## exFAT filesystem 
-This is the exfat filesystem for support from the linux 4.1 kernel
+This is the exfat filesystem for support from the linux 5.15 kernel
 to the latest kernel. 
 
 ## Installing as a stand-alone module
