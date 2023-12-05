@@ -1,6 +1,7 @@
 ## exFAT filesystem 
 This is the exfat filesystem for support from the linux 5.15 kernel
-to the latest kernel. 
+to the latest kernel. If you want to use exfat from 4.1 ~ 5.15 kernel,
+Please use #for-kernel-version-from-4.1.0 branch.
 
 ## Installing as a stand-alone module
 
