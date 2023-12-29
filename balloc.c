@@ -30,6 +30,10 @@
 #error "BITS_PER_LONG not 32 or 64"
 #endif
 
+#ifndef ALIGN_DOWN
+#define ALIGN_DOWN(x, a) __ALIGN_KERNEL((x) - ((a) - 1), (a))
+#endif 
+
 /*
  *  Allocation Bitmap Management Functions
  */
