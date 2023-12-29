@@ -1385,7 +1385,8 @@ static int exfat_rename(struct user_namespace *mnt_userns,
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 6, 0)
 	old_dir->i_ctime = old_dir->i_mtime = current_time(old_dir);
 #endif
-	mark_inode_dirty(old_dir);
+	if (new_dir != old_dir)
+		mark_inode_dirty(old_dir);
 
 	if (new_inode) {
 		exfat_unhash_inode(new_inode);
