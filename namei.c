@@ -553,6 +553,7 @@ static int exfat_create(struct user_namespace *mnt_userns, struct inode *dir,
 	struct exfat_dir_entry info;
 	loff_t i_pos;
 	int err;
+	loff_t size = i_size_read(dir);
 
 	mutex_lock(&EXFAT_SB(sb)->s_lock);
 	exfat_set_volume_dirty(sb);
@@ -571,7 +572,7 @@ static int exfat_create(struct user_namespace *mnt_userns, struct inode *dir,
 #else
 	dir->i_ctime = dir->i_mtime = current_time(dir);
 #endif
-	if (IS_DIRSYNC(dir))
+	if (IS_DIRSYNC(dir) && size != i_size_read(dir))
 		exfat_sync_inode(dir);
 	else
 		mark_inode_dirty(dir);
@@ -835,10 +836,7 @@ static int exfat_unlink(struct inode *dir, struct dentry *dentry)
 #endif
 	exfat_truncate_atime(&dir->i_atime);
 #endif
-	if (IS_DIRSYNC(dir))
-		exfat_sync_inode(dir);
-	else
-		mark_inode_dirty(dir);
+	mark_inode_dirty(dir);
 
 	clear_nlink(inode);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
@@ -873,6 +871,7 @@ static int exfat_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 	struct exfat_chain cdir;
 	loff_t i_pos;
 	int err;
+	loff_t size = i_size_read(dir);
 
 	mutex_lock(&EXFAT_SB(sb)->s_lock);
 	exfat_set_volume_dirty(sb);
@@ -892,7 +891,7 @@ static int exfat_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
 #else
 	dir->i_ctime = dir->i_mtime = current_time(dir);
 #endif
-	if (IS_DIRSYNC(dir))
+	if (IS_DIRSYNC(dir) && size != i_size_read(dir))
 		exfat_sync_inode(dir);
 	else
 		mark_inode_dirty(dir);
@@ -1331,6 +1330,7 @@ static int exfat_rename(struct user_namespace *mnt_userns,
 	struct super_block *sb = old_dir->i_sb;
 	loff_t i_pos;
 	int err;
+	loff_t size = i_size_read(new_dir);
 
 	/*
 	 * The VFS already checks for existence, so for local filesystems
@@ -1361,7 +1361,7 @@ static int exfat_rename(struct user_namespace *mnt_userns,
 #else
 	exfat_truncate_atime(&new_dir->i_atime);
 #endif
-	if (IS_DIRSYNC(new_dir))
+	if (IS_DIRSYNC(new_dir) && size != i_size_read(new_dir))
 		exfat_sync_inode(new_dir);
 	else
 		mark_inode_dirty(new_dir);
@@ -1385,10 +1385,7 @@ static int exfat_rename(struct user_namespace *mnt_userns,
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(6, 6, 0)
 	old_dir->i_ctime = old_dir->i_mtime = current_time(old_dir);
 #endif
-	if (IS_DIRSYNC(old_dir))
-		exfat_sync_inode(old_dir);
-	else
-		mark_inode_dirty(old_dir);
+	mark_inode_dirty(old_dir);
 
 	if (new_inode) {
 		exfat_unhash_inode(new_inode);
