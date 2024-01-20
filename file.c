@@ -320,12 +320,13 @@ int exfat_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 {
 	struct exfat_sb_info *sbi = EXFAT_SB(dentry->d_sb);
 	struct inode *inode = dentry->d_inode;
+	struct exfat_inode_info *ei = EXFAT_I(inode);
 	unsigned int ia_valid;
 	int error;
 
 	if ((attr->ia_valid & ATTR_SIZE) &&
 	    attr->ia_size > i_size_read(inode)) {
-		pr_err("%s : %d, ia_size : %lld, i_size : %lld\n", __func__, __LINE__ , attr->ia_size, i_size_read(inode));
+		pr_err("%s : %d, ia_size : %lld, i_size : %lld, valid_size : %lld\n", __func__, __LINE__ , attr->ia_size, i_size_read(inode), ei->valid_size);
 		error = exfat_cont_expand(inode, attr->ia_size);
 		if (error || attr->ia_valid == ATTR_SIZE) {
 			pr_err("%s : %d\n", __func__, __LINE__);
@@ -394,7 +395,7 @@ int exfat_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 #endif
 
 	if (attr->ia_valid & ATTR_SIZE) {
-		pr_err("%s : %d, ia_size : %lld, i_size : %lld\n", __func__, __LINE__ , attr->ia_size, i_size_read(inode));
+		pr_err("%s : %d, ia_size : %lld, i_size : %lld, valid_size : %lld\n", __func__, __LINE__ , attr->ia_size, i_size_read(inode), ei->valid_size);
 		error = exfat_block_truncate_page(inode, attr->ia_size);
 		if (error) {
 			pr_err("%s : %d\n", __func__, __LINE__);
