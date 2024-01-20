@@ -324,6 +324,7 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 
 	mutex_lock(&sbi->s_lock);
 	last_block = EXFAT_B_TO_BLK_ROUND_UP(i_size_read(inode), sb);
+	pr_err("iblock : %lld, last_block : %lld, create : %d\n", iblock, last_block, create);
 	if (iblock >= last_block && !create)
 		goto done;
 
@@ -343,7 +344,6 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 
 	/* sector offset in cluster */
 	sec_offset = iblock & (sbi->sect_per_clus - 1);
-	pr_err("iblock : %lld, last_block : %lld\n", iblock, last_block);
 
 	phys = exfat_cluster_to_sector(sbi, cluster) + sec_offset;
 	mapped_blocks = sbi->sect_per_clus - sec_offset;
@@ -384,7 +384,7 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 		}
 
 		ei->valid_size = EXFAT_BLK_TO_B(iblock + max_blocks, sb);
-		pr_err("%s:%d, valid-size : %lld\n", __func__, __LINE__, ei->valid_size);
+		pr_err("%s:%d, valid-size : %lld, i_size : %lld\n", __func__, __LINE__, ei->valid_size, i_size_read(inode));
 		mark_inode_dirty(inode);
 	} else {
 		valid_blks = EXFAT_B_TO_BLK(ei->valid_size, sb);
@@ -450,7 +450,6 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 		}
 	}
 done:
-	pr_err("bh_result->b_size : %ld, max_blocks : %ld\n", bh_result->b_size, max_blocks);
 	bh_result->b_size = EXFAT_BLK_TO_B(max_blocks, sb);
 unlock_ret:
 	mutex_unlock(&sbi->s_lock);
