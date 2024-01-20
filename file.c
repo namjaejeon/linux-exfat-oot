@@ -700,6 +700,7 @@ static int exfat_file_mmap(struct file *file, struct vm_area_struct *vma)
 	loff_t end = min_t(loff_t, i_size_read(inode),
 			start + vma->vm_end - vma->vm_start);
 
+	pr_err("ei valid-size : %lld, i_size : %lld, start : %lld, end : %lld\n", ei->valid_size, i_size_read(inode), start, end);
 	if ((vma->vm_flags & VM_WRITE) && ei->valid_size < end) {
 		ret = exfat_file_zeroed_range(file, ei->valid_size, end);
 		if (ret < 0) {
