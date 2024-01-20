@@ -450,6 +450,7 @@ static int exfat_get_block(struct inode *inode, sector_t iblock,
 		}
 	}
 done:
+	pr_err("bh_result->b_size : %ld, max_blocks : %ld\n", bh_result->b_size, max_blocks);
 	bh_result->b_size = EXFAT_BLK_TO_B(max_blocks, sb);
 unlock_ret:
 	mutex_unlock(&sbi->s_lock);
