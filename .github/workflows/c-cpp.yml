@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download the kernel
       run: |
         sudo apt-get update
@@ -24,9 +24,9 @@ jobs:
     - name: Prerequisite for xfstests testing
       run: |
         sudo apt-get install linux-headers-$(uname -r)
-        sudo apt-get install autoconf libtool pkg-config libnl-3-dev libnl-genl-3-dev
+        sudo apt-get install autoconf libtool pkg-config
         sudo apt-get install xfslibs-dev uuid-dev libtool-bin xfsprogs libgdbm-dev gawk fio attr libattr1-dev libacl1-dev libaio-dev
-        git clone --branch=exfat-next https://github.com/exfat-utils/exfat-utils
+        git clone --branch=exfat-next https://github.com/exfatprogs/exfatprogs
         git clone https://github.com/namjaejeon/exfat-testsuites
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         export PATH=/usr/local/lib:$PATH
@@ -51,7 +51,7 @@ jobs:
         make > /dev/null
         sudo make install > /dev/null
         sudo insmod exfat.ko
-        cd exfat-utils
+        cd exfatprogs
         ./autogen.sh > /dev/null
         ./configure > /dev/null
         make -j$((`nproc`+1)) > /dev/null
@@ -84,6 +84,7 @@ jobs:
       run: |
         cd exfat-testsuites/
         tar xzvf xfstests-exfat.tgz > /dev/null
+        rm -f xfstests-exfat.tgz
         cd xfstests-exfat
         make -j$((`nproc`+1)) > /dev/null
         truncate -s 100G test.img
