@@ -99,12 +99,23 @@ free_clu:
 	return -EIO;
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+static bool exfat_allow_set_time(struct mnt_idmap *idmap,
+				struct exfat_sb_info *sbi, struct inode *inode)
+#else
 static bool exfat_allow_set_time(struct exfat_sb_info *sbi, struct inode *inode)
+#endif
 {
 	mode_t allow_utime = sbi->options.allow_utime;
 
-	if (!uid_eq(current_fsuid(), inode->i_uid)) {
-		if (in_group_p(inode->i_gid))
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	if (!vfsuid_eq_kuid(i_uid_into_vfsuid(idmap, inode),
+			    current_fsuid())) {
+		if (vfsgid_in_group_p(i_gid_into_vfsgid(idmap, inode)))
+#else
+		if (!uid_eq(current_fsuid(), inode->i_uid)) {
+			if (in_group_p(inode->i_gid))
+#endif
 			allow_utime >>= 3;
 		if (allow_utime & MAY_WRITE)
 			return true;
@@ -301,7 +312,7 @@ int exfat_getattr(struct user_namespace *mnt_uerns, const struct path *path,
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-	generic_fillattr(&nop_mnt_idmap, request_mask, inode, stat);
+	generic_fillattr(idmap, request_mask, inode, stat);
 #else
 	generic_fillattr(&nop_mnt_idmap, inode, stat);
 #endif
@@ -340,13 +351,17 @@ int exfat_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 	/* Check for setting the inode time. */
 	ia_valid = attr->ia_valid;
 	if ((ia_valid & (ATTR_MTIME_SET | ATTR_ATIME_SET | ATTR_TIMES_SET)) &&
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	    exfat_allow_set_time(idmap, sbi, inode)) {
+#else
 	    exfat_allow_set_time(sbi, inode)) {
+#endif
 		attr->ia_valid &= ~(ATTR_MTIME_SET | ATTR_ATIME_SET |
 				ATTR_TIMES_SET);
 	}
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-	error = setattr_prepare(&nop_mnt_idmap, dentry, attr);
+	error = setattr_prepare(idmap, dentry, attr);
 #else
 	error = setattr_prepare(&init_user_ns, dentry, attr);
 #endif
@@ -354,10 +369,19 @@ int exfat_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 	if (error)
 		goto out;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+	if (((attr->ia_valid & ATTR_UID) &&
+	      (!uid_eq(from_vfsuid(idmap, i_user_ns(inode), attr->ia_vfsuid),
+	       sbi->options.fs_uid))) ||
+	    ((attr->ia_valid & ATTR_GID) &&
+	      (!gid_eq(from_vfsgid(idmap, i_user_ns(inode), attr->ia_vfsgid),
+	       sbi->options.fs_gid))) ||
+#else
 	if (((attr->ia_valid & ATTR_UID) &&
 	     !uid_eq(attr->ia_uid, sbi->options.fs_uid)) ||
 	    ((attr->ia_valid & ATTR_GID) &&
 	     !gid_eq(attr->ia_gid, sbi->options.fs_gid)) ||
+#endif
 	    ((attr->ia_valid & ATTR_MODE) &&
 	     (attr->ia_mode & ~(S_IFREG | S_IFLNK | S_IFDIR | 0777)))) {
 		error = -EPERM;
@@ -385,7 +409,7 @@ int exfat_setattr(struct user_namespace *mnt_userns, struct dentry *dentry,
 #endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
-	setattr_copy(&nop_mnt_idmap, inode, attr);
+	setattr_copy(idmap, inode, attr);
 	exfat_truncate_inode_atime(inode);
 #else
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
