@@ -845,7 +845,11 @@ static int __init init_exfat_fs(void)
 
 	exfat_inode_cachep = kmem_cache_create("exfat_inode_cache",
 			sizeof(struct exfat_inode_info),
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
+			0, SLAB_RECLAIM_ACCOUNT,
+#else
 			0, SLAB_RECLAIM_ACCOUNT | SLAB_MEM_SPREAD,
+#endif
 			exfat_inode_init_once);
 	if (!exfat_inode_cachep) {
 		err = -ENOMEM;

@@ -46,7 +46,11 @@ int exfat_cache_init(void)
 {
 	exfat_cachep = kmem_cache_create("exfat_cache",
 				sizeof(struct exfat_cache),
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 9, 0)
+				0, SLAB_RECLAIM_ACCOUNT,
+#else
 				0, SLAB_RECLAIM_ACCOUNT|SLAB_MEM_SPREAD,
+#endif
 				exfat_cache_init_once);
 	if (!exfat_cachep)
 		return -ENOMEM;
