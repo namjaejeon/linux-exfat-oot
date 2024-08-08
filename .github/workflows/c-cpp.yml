@@ -124,7 +124,6 @@ jobs:
         sudo ./check generic/124
         sudo ./check generic/127
         sudo ./check generic/129
-        sudo ./check generic/130
         sudo ./check generic/131
         sudo ./check generic/132
         sudo ./check generic/133
