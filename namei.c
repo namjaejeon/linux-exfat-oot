@@ -658,6 +658,13 @@ static int exfat_find(struct inode *dir, struct qstr *qname,
 	info->size = le64_to_cpu(ep2->dentry.stream.valid_size);
 	info->valid_size = le64_to_cpu(ep2->dentry.stream.valid_size);
 	info->size = le64_to_cpu(ep2->dentry.stream.size);
+
+	if (info->valid_size > info->size) {
+		exfat_fs_error(sb, "valid_size(%lld) is greater than size(%lld)",
+				info->valid_size, info->size);
+		return -EIO;
+	}
+
 	if (info->size == 0) {
 		info->flags = ALLOC_NO_FAT_CHAIN;
 		info->start_clu = EXFAT_EOF_CLUSTER;
@@ -665,6 +672,12 @@ static int exfat_find(struct inode *dir, struct qstr *qname,
 		info->flags = ep2->dentry.stream.flags;
 		info->start_clu =
 			le32_to_cpu(ep2->dentry.stream.start_clu);
+
+		if (!is_valid_cluster(sbi, info->start_clu)) {
+			exfat_fs_error(sb, "start_clu is invalid cluster(0x%x)",
+					info->start_clu);
+			return -EIO;
+		}
 	}
 
 	exfat_get_entry_time(sbi, &info->crtime,
