@@ -1177,7 +1177,8 @@ not_found:
 	 * set the EXFAT_EOF_CLUSTER flag to avoid search
 	 * from the beginning again when allocated a new cluster
 	 */
-	if (ei->hint_femp.eidx == EXFAT_HINT_NONE) {
+	if (ei->hint_femp.eidx == EXFAT_HINT_NONE &&
+	     is_valid_cluster(sbi, ei->start_clu)) {
 		ei->hint_femp.cur.dir = EXFAT_EOF_CLUSTER;
 		ei->hint_femp.eidx = p_dir->size * dentries_per_clu;
 		ei->hint_femp.count = 0;
