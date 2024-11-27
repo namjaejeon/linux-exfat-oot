@@ -517,13 +517,21 @@ static int exfat_write_begin(struct file *file, struct address_space *mapping,
 
 static int exfat_write_end(struct file *file, struct address_space *mapping,
 		loff_t pos, unsigned int len, unsigned int copied,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+		struct folio *folio, void *fsdata)
+#else
 		struct page *pagep, void *fsdata)
+#endif
 {
 	struct inode *inode = mapping->host;
 	struct exfat_inode_info *ei = EXFAT_I(inode);
 	int err;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+	err = generic_write_end(file, mapping, pos, len, copied, folio, fsdata);
+#else
 	err = generic_write_end(file, mapping, pos, len, copied, pagep, fsdata);
+#endif
 	if (err < len)
 		exfat_write_failed(mapping, pos+len);
 

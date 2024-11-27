@@ -652,7 +652,11 @@ static int exfat_file_zeroed_range(struct file *file, loff_t start, loff_t end)
 
 		zero_user_segment(page, zerofrom, zerofrom + len);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+		err = ops->write_end(file, mapping, start, len, len, page_folio(page), NULL);
+#else
 		err = ops->write_end(file, mapping, start, len, len, page, NULL);
+#endif
 		if (err < 0)
 			goto out;
 		start += len;
