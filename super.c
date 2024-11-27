@@ -177,7 +177,9 @@ static int exfat_show_options(struct seq_file *m, struct dentry *root)
 
 int exfat_force_shutdown(struct super_block *sb, u32 flags)
 {
+#if LINUX_VERSION_CODE > KERNEL_VERSION(6, 9, 0)
 	int ret;
+#endif
 	struct exfat_sb_info *sbi = sb->s_fs_info;
 	struct exfat_mount_options *opts = &sbi->options;
 
@@ -187,10 +189,12 @@ int exfat_force_shutdown(struct super_block *sb, u32 flags)
 	switch (flags) {
 	case EXFAT_GOING_DOWN_DEFAULT:
 	case EXFAT_GOING_DOWN_FULLSYNC:
+#if LINUX_VERSION_CODE > KERNEL_VERSION(6, 9, 0)
 		ret = bdev_freeze(sb->s_bdev);
 		if (ret)
 			return ret;
 		bdev_thaw(sb->s_bdev);
+#endif
 		set_bit(EXFAT_FLAGS_SHUTDOWN, &sbi->s_exfat_flags);
 		break;
 	case EXFAT_GOING_DOWN_NOSYNC:
@@ -240,7 +244,9 @@ static const struct super_operations exfat_sops = {
 	.sync_fs	= exfat_sync_fs,
 	.statfs		= exfat_statfs,
 	.show_options	= exfat_show_options,
+#if LINUX_VERSION_CODE > KERNEL_VERSION(5, 16, 0)
 	.shutdown	= exfat_shutdown,
+#endif
 };
 
 enum {

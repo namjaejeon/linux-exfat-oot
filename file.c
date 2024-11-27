@@ -769,7 +769,11 @@ static vm_fault_t exfat_page_mkwrite(struct vm_fault *vmf)
 		err = exfat_extend_valid_size(file, end);
 		if (err < 0) {
 			inode_unlock(inode);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
 			return vmf_fs_error(err);
+#else
+			return block_page_mkwrite_return(err);
+#endif
 		}
 	}
 
