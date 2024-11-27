@@ -493,7 +493,11 @@ static void exfat_write_failed(struct address_space *mapping, loff_t to)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0)
 static int exfat_write_begin(struct file *file, struct address_space *mapping,
 		loff_t pos, unsigned int len,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+		struct folio **foliop, void **fsdata)
+#else
 		struct page **pagep, void **fsdata)
+#endif
 #else
 static int exfat_write_begin(struct file *file, struct address_space *mapping,
 		loff_t pos, unsigned int len, unsigned int flags,
@@ -502,12 +506,16 @@ static int exfat_write_begin(struct file *file, struct address_space *mapping,
 {
 	int ret;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+	ret = block_write_begin(mapping, pos, len, foliop, exfat_get_block);
+#else
 	*pagep = NULL;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 19, 0)
 	ret = block_write_begin(mapping, pos, len, pagep, exfat_get_block);
 #else
 	ret = block_write_begin(mapping, pos, len, flags, pagep,
 				exfat_get_block);
+#endif
 #endif
 	if (ret < 0)
 		exfat_write_failed(mapping, pos+len);

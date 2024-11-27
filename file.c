@@ -635,7 +635,11 @@ static int exfat_file_zeroed_range(struct file *file, loff_t start, loff_t end)
 
 	while (start < end) {
 		u32 zerofrom, len;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+		struct folio *folio;
+#else
 		struct page *page = NULL;
+#endif
 
 		zerofrom = start & (PAGE_SIZE - 1);
 		len = PAGE_SIZE - zerofrom;
@@ -643,17 +647,25 @@ static int exfat_file_zeroed_range(struct file *file, loff_t start, loff_t end)
 			len = end - start;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 0, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+		err = ops->write_begin(file, mapping, start, len, &folio, NULL);
+#else
 		err = ops->write_begin(file, mapping, start, len, &page, NULL);
+#endif
 #else
 		err = ops->write_begin(file, mapping, start, len, 0, &page, NULL);
 #endif
 		if (err)
 			goto out;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+		folio_zero_range(folio, offset_in_folio(folio, start), len);
+#else
 		zero_user_segment(page, zerofrom, zerofrom + len);
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-		err = ops->write_end(file, mapping, start, len, len, page_folio(page), NULL);
+		err = ops->write_end(file, mapping, start, len, len, folio, NULL);
 #else
 		err = ops->write_end(file, mapping, start, len, len, page, NULL);
 #endif
