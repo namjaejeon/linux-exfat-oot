@@ -117,6 +117,9 @@ int exfat_write_inode(struct inode *inode, struct writeback_control *wbc)
 {
 	int ret;
 
+	if (unlikely(exfat_forced_shutdown(inode->i_sb)))
+		return -EIO;
+
 	mutex_lock(&EXFAT_SB(inode->i_sb)->s_lock);
 	ret = __exfat_write_inode(inode, wbc->sync_mode == WB_SYNC_ALL);
 	mutex_unlock(&EXFAT_SB(inode->i_sb)->s_lock);
@@ -462,6 +465,9 @@ static int exfat_writepage(struct page *page, struct writeback_control *wbc)
 static int exfat_writepages(struct address_space *mapping,
 		struct writeback_control *wbc)
 {
+	if (unlikely(exfat_forced_shutdown(mapping->host->i_sb)))
+		return -EIO;
+
 	return mpage_writepages(mapping, wbc, exfat_get_block);
 }
 
