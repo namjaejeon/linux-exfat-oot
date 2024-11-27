@@ -11,7 +11,12 @@
  */
 
 #include <linux/slab.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+#include <linux/unaligned.h>
+#else
 #include <asm/unaligned.h>
+#endif
 #include <linux/buffer_head.h>
 
 #include "exfat_raw.h"
