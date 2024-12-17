@@ -206,6 +206,8 @@ static int __exfat_free_cluster(struct inode *inode, struct exfat_chain *p_chain
 
 			if (err || n_clu == EXFAT_EOF_CLUSTER)
 				sync = true;
+			else if (num_clusters >= p_chain->size)
+				break;
 			else
 				next_cmap_i =
 				  BITMAP_OFFSET_SECTOR_INDEX(sb, CLUSTER_TO_BITMAP_ENT(n_clu));
