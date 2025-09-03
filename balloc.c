@@ -109,7 +109,7 @@ static int exfat_allocate_bitmap(struct super_block *sb,
 	}
 
 	if (exfat_test_bitmap_range(sb, sbi->map_clu,
-		round_up(map_size, sbi->cluster_size) >> sbi->cluster_size_bits) == false)
+		EXFAT_B_TO_CLU_ROUND_UP(map_size, sbi)) == false)
 		goto err_out;
 
 	return 0;
