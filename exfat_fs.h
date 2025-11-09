@@ -470,6 +470,7 @@ int exfat_count_num_clusters(struct super_block *sb,
 		struct exfat_chain *p_chain, unsigned int *ret_count);
 
 /* balloc.c */
+bool exfat_test_bitmap(struct super_block *sb, unsigned int clu);
 int exfat_load_bitmap(struct super_block *sb);
 void exfat_free_bitmap(struct exfat_sb_info *sbi);
 int exfat_set_bitmap(struct inode *inode, unsigned int clu, bool sync);
